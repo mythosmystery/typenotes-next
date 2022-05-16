@@ -49,7 +49,9 @@ export const MarkdownPreview = props => {
       color: #f02ffa ;
     }
     .markdown-container pre {
-      background-color: #f0f0f0 ;
+      background-color: #282c34 ;
+      border-radius: 0.5rem ;
+      padding: 0.75rem;
     }
     .markdown-container a {
       color: #392ffa ;
@@ -70,11 +72,13 @@ export const MarkdownPreview = props => {
       padding: 0.15rem 0.3rem ;
       border-radius: 0.3rem ;
       color: #f02ffa99 ;
+      border-radius: 0.5rem ;
       margin: 0.7rem 0 ;
     }
     .markdown-container table {
       border: 1px solid #333333 ;
       padding: 1rem ;
+      overflow-x: scroll !important;
     }
     .markdown-container th {
       border: 1px solid #333333 ;
@@ -94,7 +98,7 @@ export const MarkdownPreview = props => {
   `
   console.log(parsedMarkdown)
   return (
-    <Box h="87vh" m="4px" overflowY="scroll" hidden={isEditing} onClick={onEdit}>
+    <Box h="87vh" m="4px" px={24} maxW="80vw" overflowY="scroll" hidden={isEditing} onClick={onEdit}>
       <div className="markdown-container" dangerouslySetInnerHTML={{ __html: parsedMarkdown + styles }} />
     </Box>
   )

@@ -55,10 +55,9 @@ export default function Notes() {
           </Box>
           <Divider />
           {notes.map((note, i) => (
-            <>
+            <Box key={note.id}>
               <Text
                 textAlign="center"
-                key={note.id}
                 onClick={() => router.push(`/notes/${note.id}`)}
                 fontSize="xl"
                 py={4}
@@ -67,7 +66,7 @@ export default function Notes() {
                 {note.title}
               </Text>
               <Divider />
-            </>
+            </Box>
           ))}
         </Box>
         <Editable flex={1} defaultValue="<b>Hello World</b>">
