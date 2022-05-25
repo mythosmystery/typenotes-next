@@ -3,11 +3,13 @@ import { useState } from "react"
 import NLink from "next/link"
 import { PasswordInput } from "../components/atoms/PasswordInput"
 import { CenterLayout } from "../layouts/center"
-import { CgNotes } from "react-icons/cg"
 import { useRouter } from "next/router"
+import { useMutation } from "@apollo/client"
+import { Login, LoginMutation } from "../generated/graphql"
 
-export default function Login() {
+export default function LoginPage() {
   const router = useRouter()
+  const [login] = useMutation<LoginMutation>(Login)
   const [password, setPassword] = useState("")
   const [email, setEmail] = useState("")
 
@@ -15,10 +17,22 @@ export default function Login() {
     setEmail(e.target.value)
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log({ email, password })
-    router.push("/notes")
+    const { data } = await login({
+      variables: {
+        email,
+        password
+      }
+    })
+    if (data.results.token && data.results.refreshToken) {
+      localStorage.setItem("token", data.results.token)
+      localStorage.setItem("refreshToken", data.results.refreshToken)
+      localStorage.setItem("user", JSON.stringify(data.results.user))
+      router.push("/notes")
+    } else {
+      console.error("Error logging in")
+    }
   }
   return (
     <CenterLayout>

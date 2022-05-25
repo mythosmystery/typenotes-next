@@ -14,7 +14,7 @@ export const MarkdownPreview = props => {
     gfm: true,
     smartLists: true
   })
-  const parsedMarkdown = marked.parse(props.children || "")
+  const parsedMarkdown = marked.parse(props.inputText || props.children || "")
   // const sanitizedHtml = sanitize(props.children)
   const styles = `
   <style>
@@ -96,7 +96,6 @@ export const MarkdownPreview = props => {
     }
   </style>
   `
-  console.log(parsedMarkdown)
   return (
     <Box h="87vh" m="4px" px={24} maxW="80vw" overflowY="scroll" hidden={isEditing} onClick={onEdit}>
       <div className="markdown-container" dangerouslySetInnerHTML={{ __html: parsedMarkdown + styles }} />

@@ -10,6 +10,7 @@ import {
   EditableInput,
   EditablePreview,
   EditableTextarea,
+  Heading,
   Icon,
   IconButton,
   Text,
@@ -22,22 +23,31 @@ import { useRouter } from "next/router"
 import { CenterLayout } from "../../layouts/center"
 import { Titlebar } from "../../components/atoms/Titlebar"
 import { MarkdownPreview } from "../../components/molecules/MarkdownPreview"
+import { gql, useQuery } from "@apollo/client"
+import { GetMe, GetMeQuery, Note } from "../../generated/graphql"
 export default function Notes() {
-  const notes = [
-    { title: "Note 1", id: "asdasfasfa" },
-    { title: "Note 2", id: "wieuoaiwue9" },
-    { title: "Note 3", id: "jdawodwa" }
-  ]
   const router = useRouter()
-  const { isOpen, onClose, onOpen } = useDisclosure()
+  const [selectedNote, setSelectedNote] = useState<Note>(null)
+  const {
+    data: { results },
+    error,
+    loading
+  } = useQuery<GetMeQuery>(GetMe)
+  if (error) {
+    return (
+      <CenterLayout>
+        <Text>Error</Text>
+      </CenterLayout>
+    )
+  }
+
   return (
     <CenterLayout>
       <Titlebar />
-      {/* <IconButton aria-label="open menu" icon={<ArrowForwardIcon />} onClick={onOpen} /> */}
       <Box justifyContent="space-between" alignItems="start" display="flex" w="100vw">
         <Box justifyContent="center" display="flex" flexDir="column" minW="300px" px={6}>
           <Text textAlign="center" fontSize="2xl" color="gray.500">
-            My Notes
+            {results.name.split(" ")[0]}'s Notes
           </Text>
           <Divider />
           <Box
@@ -54,11 +64,12 @@ export default function Notes() {
             </Text>
           </Box>
           <Divider />
-          {notes.map((note, i) => (
-            <Box key={note.id}>
+          {results.notes.map((note: Note) => (
+            <Box key={note._id}>
               <Text
                 textAlign="center"
-                onClick={() => router.push(`/notes/${note.id}`)}
+                // onClick={() => router.push(`/notes/${note._id}`)}
+                onClick={() => setSelectedNote(note)}
                 fontSize="xl"
                 py={4}
                 _hover={{ bg: "brand", cursor: "pointer" }}
@@ -69,25 +80,16 @@ export default function Notes() {
             </Box>
           ))}
         </Box>
-        <Editable flex={1} defaultValue="<b>Hello World</b>">
+        <Editable
+          flex={1}
+          defaultValue={"# Hello World!"}
+          value={selectedNote?.content}
+          onChange={e => setSelectedNote(note => ({ ...note, content: e }))}
+        >
           <EditablePreview as={MarkdownPreview} />
           <EditableTextarea h="85vh" />
         </Editable>
       </Box>
-      {/* <Drawer placement="left" onClose={onClose} isOpen={isOpen} isFullHeight={false}>
-        <DrawerContent>
-          <DrawerHeader borderBlockEndWidth="1px">Notes</DrawerHeader>
-          <DrawerBody>
-            <p>Note 1</p>
-            <p>Note 1</p>
-            <p>Note 1</p>
-            <p>Note 1</p>
-            <p>Note 1</p>
-            <p>Note 1</p>
-            <p>Note 1</p>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer> */}
     </CenterLayout>
   )
 }
