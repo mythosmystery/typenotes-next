@@ -16,24 +16,20 @@ import {
   Text,
   Textarea,
   useDisclosure
-} from "@chakra-ui/react"
-import { useState } from "react"
-import { ArrowForwardIcon, AddIcon } from "@chakra-ui/icons"
-import { useRouter } from "next/router"
-import { CenterLayout } from "../../layouts/center"
-import { Titlebar } from "../../components/atoms/Titlebar"
-import { MarkdownPreview } from "../../components/molecules/MarkdownPreview"
-import { gql, useQuery } from "@apollo/client"
-import { GetMe, GetMeQuery, Note } from "../../generated/graphql"
+} from '@chakra-ui/react'
+import { useState } from 'react'
+import { ArrowForwardIcon, AddIcon } from '@chakra-ui/icons'
+import { useRouter } from 'next/router'
+import { CenterLayout } from '../../layouts/center'
+import { Titlebar } from '../../components/atoms/Titlebar'
+import { MarkdownPreview } from '../../components/molecules/MarkdownPreview'
+import { gql, useQuery } from '@apollo/client'
+import { GetMe, GetMeQuery, Note } from '../../generated/graphql'
 export default function Notes() {
   const router = useRouter()
   const [selectedNote, setSelectedNote] = useState<Note>(null)
-  const {
-    data: { results },
-    error,
-    loading
-  } = useQuery<GetMeQuery>(GetMe)
-  if (error) {
+  const { data, error, loading } = useQuery<GetMeQuery>(GetMe)
+  if (error || !data?.results) {
     return (
       <CenterLayout>
         <Text>Error</Text>
@@ -41,38 +37,40 @@ export default function Notes() {
     )
   }
 
+  const { results } = data
+
   return (
     <CenterLayout>
       <Titlebar />
-      <Box justifyContent="space-between" alignItems="start" display="flex" w="100vw">
-        <Box justifyContent="center" display="flex" flexDir="column" minW="300px" px={6}>
-          <Text textAlign="center" fontSize="2xl" color="gray.500">
-            {results.name.split(" ")[0]}'s Notes
+      <Box justifyContent='space-between' alignItems='start' display='flex' w='100vw'>
+        <Box justifyContent='center' display='flex' flexDir='column' minW='300px' px={6}>
+          <Text textAlign='center' fontSize='2xl' color='gray.500'>
+            {results.name.split(' ')[0]}'s Notes
           </Text>
           <Divider />
           <Box
-            display="flex"
-            flexDir="row"
-            justifyContent="center"
-            alignItems="center"
-            _hover={{ bg: "brand", cursor: "pointer" }}
-            _active={{ bg: "blue.400", cursor: "pointer" }}
+            display='flex'
+            flexDir='row'
+            justifyContent='center'
+            alignItems='center'
+            _hover={{ bg: 'brand', cursor: 'pointer' }}
+            _active={{ bg: 'blue.400', cursor: 'pointer' }}
           >
             <AddIcon w={4} h={4} />
-            <Text fontSize="xl" ml="3" my={4}>
+            <Text fontSize='xl' ml='3' my={4}>
               Create
             </Text>
           </Box>
           <Divider />
-          {results.notes.map((note: Note) => (
+          {(results.notes || []).map((note: Note) => (
             <Box key={note._id}>
               <Text
-                textAlign="center"
+                textAlign='center'
                 // onClick={() => router.push(`/notes/${note._id}`)}
                 onClick={() => setSelectedNote(note)}
-                fontSize="xl"
+                fontSize='xl'
                 py={4}
-                _hover={{ bg: "brand", cursor: "pointer" }}
+                _hover={{ bg: 'brand', cursor: 'pointer' }}
               >
                 {note.title}
               </Text>
@@ -82,12 +80,12 @@ export default function Notes() {
         </Box>
         <Editable
           flex={1}
-          defaultValue={"# Hello World!"}
+          defaultValue={'# Hello World!'}
           value={selectedNote?.content}
           onChange={e => setSelectedNote(note => ({ ...note, content: e }))}
         >
           <EditablePreview as={MarkdownPreview} />
-          <EditableTextarea h="85vh" />
+          <EditableTextarea h='85vh' />
         </Editable>
       </Box>
     </CenterLayout>

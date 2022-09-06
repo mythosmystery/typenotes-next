@@ -1,5 +1,5 @@
-import { ApolloClient, ApolloLink, createHttpLink, HttpLink, InMemoryCache } from "@apollo/client"
-import { setContext } from "@apollo/client/link/context"
+import { ApolloClient, ApolloLink, createHttpLink, HttpLink, InMemoryCache } from '@apollo/client'
+import { setContext } from '@apollo/client/link/context'
 
 // const authLink = new ApolloLink((operation, forward) => {
 //   operation.setContext({
@@ -16,17 +16,17 @@ import { setContext } from "@apollo/client/link/context"
 // })
 
 const httpLink = createHttpLink({
-  uri: "http://localhost:3001/query"
+  uri: '/query'
 })
 
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem("token")
-  const refreshToken = localStorage.getItem("refreshToken")
+  const token = localStorage.getItem('token') || ''
+  const refreshToken = localStorage.getItem('refreshToken') || ''
   return {
     headers: {
       ...headers,
-      "x-token": token,
-      "x-refresh-token": refreshToken
+      'x-token': token,
+      'x-refresh-token': refreshToken
     }
   }
 })
