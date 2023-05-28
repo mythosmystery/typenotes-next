@@ -109,6 +109,7 @@ export type User = {
   fullName: Scalars['String'];
   notes: Array<Note>;
   password: Scalars['String'];
+  status: Scalars['String'];
   updatedAt: Scalars['DateTime'];
   username: Scalars['String'];
 };
@@ -123,30 +124,50 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', results: { __typename?: 'Auth', accessToken: string, refreshToken: string, user: { __typename?: 'User', _id: string, email: string, fullName: string } } };
+export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'Auth', accessToken: string, refreshToken: string, user: { __typename?: 'User', _id: string, email: string, fullName: string, username: string } } };
+
+export type NoteUpdateMutationVariables = Exact<{
+  id: Scalars['String'];
+  body?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type NoteUpdateMutation = { __typename?: 'Mutation', noteUpdate: { __typename?: 'Note', _id: string, body: string, title: string, createdAt: any, updatedAt: any } };
 
 export type GetMeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMeQuery = { __typename?: 'Query', results: { __typename?: 'User', _id: string, fullName: string, email: string, notes: Array<{ __typename?: 'Note', _id: string, title: string, body: string }> } };
+export type GetMeQuery = { __typename?: 'Query', me: { __typename?: 'User', _id: string, fullName: string, email: string, notes: Array<{ __typename?: 'Note', _id: string, title: string, body: string }> } };
 
 
 export const Login = gql`
     mutation Login($data: LoginInput!) {
-  results: login(data: $data) {
+  login(data: $data) {
     accessToken
     refreshToken
     user {
       _id
       email
       fullName
+      username
     }
+  }
+}
+    `;
+export const NoteUpdate = gql`
+    mutation NoteUpdate($id: String!, $body: String) {
+  noteUpdate(id: $id, body: $body) {
+    _id
+    body
+    title
+    createdAt
+    updatedAt
   }
 }
     `;
 export const GetMe = gql`
     query GetMe {
-  results: me {
+  me {
     _id
     fullName
     email

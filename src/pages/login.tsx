@@ -15,6 +15,8 @@ import { CenterLayout } from '../layouts/center'
 import { useRouter } from 'next/router'
 import { useMutation } from '@apollo/client'
 import { Login, LoginMutation } from '../generated/graphql'
+import { globalState, loginUser } from '../state'
+import { useHookstate } from '@hookstate/core'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -28,15 +30,15 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const { data } = await login({
+    const {
+      data: { login: res }
+    } = await login({
       variables: {
         data: { email, password }
       }
     })
-    if (data.results.accessToken && data.results.refreshToken) {
-      localStorage.setItem('token', data.results.accessToken)
-      localStorage.setItem('refreshToken', data.results.refreshToken)
-      localStorage.setItem('user', JSON.stringify(data.results.user))
+    if (res.accessToken && res.refreshToken) {
+      loginUser(res.user, res.accessToken, res.refreshToken)
       router.push('/notes')
     } else {
       console.error('Error logging in')

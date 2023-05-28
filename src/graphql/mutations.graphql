@@ -1,11 +1,22 @@
 mutation Login($data: LoginInput!) {
-  results: login(data: $data) {
+  login(data: $data) {
     accessToken
     refreshToken
     user {
       _id
       email
       fullName
+      username
     }
+  }
+}
+
+mutation NoteUpdate($id: String!, $body: String) {
+  noteUpdate(id: $id, body: $body) {
+    _id
+    body
+    title
+    createdAt
+    updatedAt
   }
 }

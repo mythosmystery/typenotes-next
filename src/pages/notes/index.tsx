@@ -17,19 +17,42 @@ import {
   Textarea,
   useDisclosure
 } from '@chakra-ui/react'
-import { useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import { ArrowForwardIcon, AddIcon } from '@chakra-ui/icons'
 import { useRouter } from 'next/router'
 import { CenterLayout } from '../../layouts/center'
 import { Titlebar } from '../../components/atoms/Titlebar'
 import { MarkdownPreview } from '../../components/molecules/MarkdownPreview'
-import { gql, useQuery } from '@apollo/client'
-import { GetMe, GetMeQuery, Note } from '../../generated/graphql'
+import { gql, useMutation, useQuery } from '@apollo/client'
+import {
+  GetMe,
+  GetMeQuery,
+  Note,
+  NoteUpdate,
+  NoteUpdateMutation
+} from '../../generated/graphql'
+import { debounce } from 'lodash'
+import { Event } from 'ws'
+
 export default function Notes() {
   const router = useRouter()
   const [selectedNote, setSelectedNote] = useState<Partial<Note>>(null)
+
   const { data, error, loading } = useQuery<GetMeQuery>(GetMe)
-  if (error || !data?.results) {
+  const [updateNote] = useMutation<NoteUpdateMutation>(NoteUpdate)
+
+  const noteUpdate = useCallback(debounce(noteUpdateHandler, 2000), [])
+
+  useEffect(() => {
+    if (data?.me?.notes?.length > 0) {
+      console.log(data.me.notes)
+      setSelectedNote({
+        ...data.me.notes[0]
+      })
+    }
+  }, [data?.me?.notes])
+
+  if (error || !data?.me) {
     return (
       <CenterLayout>
         <Text>Error: {error?.message}</Text>
@@ -37,7 +60,23 @@ export default function Notes() {
     )
   }
 
-  const { results } = data
+  async function noteUpdateHandler(e: ChangeEvent<HTMLTextAreaElement>) {
+    console.log(e.target.value)
+    if (!selectedNote?._id) return
+
+    const { data, errors } = await updateNote({
+      variables: {
+        id: selectedNote._id,
+        body: e.target.value
+      }
+    })
+    if (errors) {
+      console.error(errors)
+    }
+    if (data) {
+      console.log(data)
+    }
+  }
 
   return (
     <CenterLayout>
@@ -48,47 +87,6 @@ export default function Notes() {
         display='flex'
         w='100vw'
       >
-        <Box
-          justifyContent='center'
-          display='flex'
-          flexDir='column'
-          minW='300px'
-          px={6}
-        >
-          <Text textAlign='center' fontSize='2xl' color='gray.500'>
-            {results.fullName.split(' ')[0]}'s Notes
-          </Text>
-          <Divider />
-          <Box
-            display='flex'
-            flexDir='row'
-            justifyContent='center'
-            alignItems='center'
-            _hover={{ bg: 'brand', cursor: 'pointer' }}
-            _active={{ bg: 'blue.400', cursor: 'pointer' }}
-          >
-            <AddIcon w={4} h={4} />
-            <Text fontSize='xl' ml='3' my={4}>
-              Create
-            </Text>
-          </Box>
-          <Divider />
-          {(results.notes || []).map((note: Note) => (
-            <Box key={note._id}>
-              <Text
-                textAlign='center'
-                // onClick={() => router.push(`/notes/${note._id}`)}
-                onClick={() => setSelectedNote(note)}
-                fontSize='xl'
-                py={4}
-                _hover={{ bg: 'brand', cursor: 'pointer' }}
-              >
-                {note.title}
-              </Text>
-              <Divider />
-            </Box>
-          ))}
-        </Box>
         <Editable
           flex={1}
           defaultValue={'# Hello World!'}
@@ -96,7 +94,17 @@ export default function Notes() {
           onChange={e => setSelectedNote(note => ({ ...note, body: e }))}
         >
           <EditablePreview as={MarkdownPreview} />
-          <EditableTextarea h='85vh' />
+          <EditableTextarea
+            h='85vh'
+            mx='24'
+            py='8'
+            _focus={{
+              ring: 'none',
+              border: 'none',
+              outline: 'none'
+            }}
+            onChange={noteUpdate}
+          />
         </Editable>
       </Box>
     </CenterLayout>

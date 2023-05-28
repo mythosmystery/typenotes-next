@@ -1,5 +1,5 @@
 query GetMe {
-  results: me {
+  me {
     _id
     fullName
     email
