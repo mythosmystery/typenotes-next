@@ -27,12 +27,12 @@ import { gql, useQuery } from '@apollo/client'
 import { GetMe, GetMeQuery, Note } from '../../generated/graphql'
 export default function Notes() {
   const router = useRouter()
-  const [selectedNote, setSelectedNote] = useState<Note>(null)
+  const [selectedNote, setSelectedNote] = useState<Partial<Note>>(null)
   const { data, error, loading } = useQuery<GetMeQuery>(GetMe)
   if (error || !data?.results) {
     return (
       <CenterLayout>
-        <Text>Error</Text>
+        <Text>Error: {error?.message}</Text>
       </CenterLayout>
     )
   }
@@ -42,10 +42,21 @@ export default function Notes() {
   return (
     <CenterLayout>
       <Titlebar />
-      <Box justifyContent='space-between' alignItems='start' display='flex' w='100vw'>
-        <Box justifyContent='center' display='flex' flexDir='column' minW='300px' px={6}>
+      <Box
+        justifyContent='space-between'
+        alignItems='start'
+        display='flex'
+        w='100vw'
+      >
+        <Box
+          justifyContent='center'
+          display='flex'
+          flexDir='column'
+          minW='300px'
+          px={6}
+        >
           <Text textAlign='center' fontSize='2xl' color='gray.500'>
-            {results.name.split(' ')[0]}'s Notes
+            {results.fullName.split(' ')[0]}'s Notes
           </Text>
           <Divider />
           <Box
@@ -81,8 +92,8 @@ export default function Notes() {
         <Editable
           flex={1}
           defaultValue={'# Hello World!'}
-          value={selectedNote?.content}
-          onChange={e => setSelectedNote(note => ({ ...note, content: e }))}
+          value={selectedNote?.body}
+          onChange={e => setSelectedNote(note => ({ ...note, body: e }))}
         >
           <EditablePreview as={MarkdownPreview} />
           <EditableTextarea h='85vh' />

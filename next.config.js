@@ -2,12 +2,9 @@ module.exports = () => {
   const rewrites = () => {
     return [
       {
-        source: '/query',
-        destination: 'http://typenotes-server:3001/query'
-      },
-      {
         source: '/gql',
-        destination: 'http://typenotes-server:3001/gql'
+        destination: 'http://localhost:4000/gql'
+        // destination: 'http://typenotes-server:4000/gql'
       }
     ]
   }

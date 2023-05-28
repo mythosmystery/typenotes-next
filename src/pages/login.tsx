@@ -1,17 +1,26 @@
-import { Box, Button, Center, Input, Link, LinkBox, Stack, Text } from "@chakra-ui/react"
-import { useState } from "react"
-import NLink from "next/link"
-import { PasswordInput } from "../components/atoms/PasswordInput"
-import { CenterLayout } from "../layouts/center"
-import { useRouter } from "next/router"
-import { useMutation } from "@apollo/client"
-import { Login, LoginMutation } from "../generated/graphql"
+import {
+  Box,
+  Button,
+  Center,
+  Input,
+  Link,
+  LinkBox,
+  Stack,
+  Text
+} from '@chakra-ui/react'
+import { useState } from 'react'
+import NLink from 'next/link'
+import { PasswordInput } from '../components/atoms/PasswordInput'
+import { CenterLayout } from '../layouts/center'
+import { useRouter } from 'next/router'
+import { useMutation } from '@apollo/client'
+import { Login, LoginMutation } from '../generated/graphql'
 
 export default function LoginPage() {
   const router = useRouter()
   const [login] = useMutation<LoginMutation>(Login)
-  const [password, setPassword] = useState("")
-  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('')
 
   const handleEmailChange = e => {
     setEmail(e.target.value)
@@ -21,35 +30,39 @@ export default function LoginPage() {
     e.preventDefault()
     const { data } = await login({
       variables: {
-        email,
-        password
+        data: { email, password }
       }
     })
-    if (data.results.token && data.results.refreshToken) {
-      localStorage.setItem("token", data.results.token)
-      localStorage.setItem("refreshToken", data.results.refreshToken)
-      localStorage.setItem("user", JSON.stringify(data.results.user))
-      router.push("/notes")
+    if (data.results.accessToken && data.results.refreshToken) {
+      localStorage.setItem('token', data.results.accessToken)
+      localStorage.setItem('refreshToken', data.results.refreshToken)
+      localStorage.setItem('user', JSON.stringify(data.results.user))
+      router.push('/notes')
     } else {
-      console.error("Error logging in")
+      console.error('Error logging in')
     }
   }
   return (
     <CenterLayout>
-      <Text fontSize="4xl" mb={2}>
+      <Text fontSize='4xl' mb={2}>
         Welcome back!
       </Text>
       <form onSubmit={handleSubmit}>
         <Stack>
-          <Input placeholder="Enter Email" type="email" value={email} onChange={handleEmailChange} />
+          <Input
+            placeholder='Enter Email'
+            type='email'
+            value={email}
+            onChange={handleEmailChange}
+          />
           <PasswordInput value={password} setValue={setPassword} />
-          <Button type="submit" bg="brand">
+          <Button type='submit' bg='brand'>
             Login
           </Button>
           <Text>
             Don't have an account?
-            <NLink href="/register">
-              <Link color="link" ml={2}>
+            <NLink href='/register'>
+              <Link color='link' ml={2}>
                 Create one!
               </Link>
             </NLink>

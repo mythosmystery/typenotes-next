@@ -1,4 +1,10 @@
-import { ApolloClient, ApolloLink, createHttpLink, HttpLink, InMemoryCache } from '@apollo/client'
+import {
+  ApolloClient,
+  ApolloLink,
+  createHttpLink,
+  HttpLink,
+  InMemoryCache
+} from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
 
 // const authLink = new ApolloLink((operation, forward) => {
@@ -16,7 +22,7 @@ import { setContext } from '@apollo/client/link/context'
 // })
 
 const httpLink = createHttpLink({
-  uri: '/query'
+  uri: '/gql'
 })
 
 const authLink = setContext((_, { headers }) => {
@@ -25,8 +31,8 @@ const authLink = setContext((_, { headers }) => {
   return {
     headers: {
       ...headers,
-      'x-token': token,
-      'x-refresh-token': refreshToken
+      'x-access-token': `Bearer ${token}`,
+      'x-refresh-token': `Bearer ${refreshToken}`
     }
   }
 })

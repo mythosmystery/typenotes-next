@@ -11,148 +11,135 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** The javascript `Date` as string. Type represents date and time as the ISO Date string. */
+  DateTime: any;
 };
 
 export type Auth = {
   __typename?: 'Auth';
+  accessToken: Scalars['String'];
   refreshToken: Scalars['String'];
-  token: Scalars['String'];
   user: User;
+};
+
+export type LoginInput = {
+  email: Scalars['String'];
+  password: Scalars['String'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createNote: Note;
-  createUser: User;
-  deleteNote?: Maybe<Scalars['Boolean']>;
-  deleteUser?: Maybe<Scalars['Boolean']>;
   login: Auth;
-  refreshTokens: Auth;
+  noteCreate: Note;
+  noteDelete: Scalars['Boolean'];
+  noteUpdate: Note;
   register: Auth;
-  updateNote: Note;
-};
-
-
-export type MutationCreateNoteArgs = {
-  input: NewNote;
-};
-
-
-export type MutationCreateUserArgs = {
-  input: NewUser;
-};
-
-
-export type MutationDeleteNoteArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type MutationDeleteUserArgs = {
-  id: Scalars['ID'];
+  userDelete: Scalars['Boolean'];
+  userUpdate: User;
 };
 
 
 export type MutationLoginArgs = {
-  email: Scalars['String'];
-  password: Scalars['String'];
+  data: LoginInput;
 };
 
 
-export type MutationRefreshTokensArgs = {
-  token: Scalars['String'];
+export type MutationNoteCreateArgs = {
+  body: Scalars['String'];
+  title: Scalars['String'];
+};
+
+
+export type MutationNoteDeleteArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationNoteUpdateArgs = {
+  body?: InputMaybe<Scalars['String']>;
+  id: Scalars['String'];
+  title?: InputMaybe<Scalars['String']>;
 };
 
 
 export type MutationRegisterArgs = {
-  input: NewUser;
+  data: RegisterInput;
 };
 
 
-export type MutationUpdateNoteArgs = {
-  id: Scalars['ID'];
-  input: UpdateNote;
-};
-
-export type NewNote = {
-  content: Scalars['String'];
-  title: Scalars['String'];
-};
-
-export type NewUser = {
-  email: Scalars['String'];
-  name: Scalars['String'];
-  password: Scalars['String'];
+export type MutationUserUpdateArgs = {
+  data: UserInput;
 };
 
 export type Note = {
   __typename?: 'Note';
-  _id: Scalars['String'];
-  content: Scalars['String'];
-  createdAt: Scalars['Int'];
-  createdBy?: Maybe<User>;
+  _id: Scalars['ID'];
+  body: Scalars['String'];
+  createdAt: Scalars['DateTime'];
+  createdBy: User;
   title: Scalars['String'];
-  updatedAt?: Maybe<Scalars['Int']>;
+  updatedAt: Scalars['DateTime'];
 };
 
 export type Query = {
   __typename?: 'Query';
-  me?: Maybe<User>;
-  note: Note;
-  notes?: Maybe<Array<Maybe<Note>>>;
-  user: User;
-  users?: Maybe<Array<Maybe<User>>>;
+  me: User;
+  noteById: Note;
+  noteByUser: Array<Note>;
+  noteMany: Array<Note>;
 };
 
 
-export type QueryNoteArgs = {
-  id: Scalars['ID'];
+export type QueryNoteByIdArgs = {
+  id: Scalars['String'];
 };
 
-
-export type QueryUserArgs = {
-  id: Scalars['ID'];
-};
-
-export type UpdateNote = {
-  content?: InputMaybe<Scalars['String']>;
-  title?: InputMaybe<Scalars['String']>;
+export type RegisterInput = {
+  email: Scalars['String'];
+  fullName: Scalars['String'];
+  password: Scalars['String'];
+  username: Scalars['String'];
 };
 
 export type User = {
   __typename?: 'User';
   _id: Scalars['ID'];
-  createdAt: Scalars['Int'];
+  createdAt: Scalars['DateTime'];
   email: Scalars['String'];
-  name: Scalars['String'];
-  notes?: Maybe<Array<Maybe<Note>>>;
+  fullName: Scalars['String'];
+  notes: Array<Note>;
   password: Scalars['String'];
-  updatedAt?: Maybe<Scalars['Int']>;
+  updatedAt: Scalars['DateTime'];
+  username: Scalars['String'];
+};
+
+export type UserInput = {
+  fullName?: InputMaybe<Scalars['String']>;
+  username?: InputMaybe<Scalars['String']>;
 };
 
 export type LoginMutationVariables = Exact<{
-  email: Scalars['String'];
-  password: Scalars['String'];
+  data: LoginInput;
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', results: { __typename?: 'Auth', token: string, refreshToken: string, user: { __typename?: 'User', _id: string, email: string, name: string } } };
+export type LoginMutation = { __typename?: 'Mutation', results: { __typename?: 'Auth', accessToken: string, refreshToken: string, user: { __typename?: 'User', _id: string, email: string, fullName: string } } };
 
 export type GetMeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMeQuery = { __typename?: 'Query', results?: { __typename?: 'User', _id: string, name: string, email: string, notes?: Array<{ __typename?: 'Note', _id: string, title: string, content: string } | null> | null } | null };
+export type GetMeQuery = { __typename?: 'Query', results: { __typename?: 'User', _id: string, fullName: string, email: string, notes: Array<{ __typename?: 'Note', _id: string, title: string, body: string }> } };
 
 
 export const Login = gql`
-    mutation Login($email: String!, $password: String!) {
-  results: login(email: $email, password: $password) {
-    token
+    mutation Login($data: LoginInput!) {
+  results: login(data: $data) {
+    accessToken
     refreshToken
     user {
       _id
       email
-      name
+      fullName
     }
   }
 }
@@ -161,12 +148,12 @@ export const GetMe = gql`
     query GetMe {
   results: me {
     _id
-    name
+    fullName
     email
     notes {
       _id
       title
-      content
+      body
     }
   }
 }
