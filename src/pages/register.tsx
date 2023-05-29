@@ -1,55 +1,98 @@
-import { Button, Center, Input, Link, Stack, Text } from '@chakra-ui/react'
+import { useMutation } from '@apollo/client'
+import {
+  Button,
+  Center,
+  Input,
+  Link,
+  Stack,
+  Text,
+  InputGroup,
+  InputRightElement
+} from '@chakra-ui/react'
 import NLink from 'next/link'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
-import { CgNotes } from 'react-icons/cg'
-import { PasswordInput } from '../components/atoms/PasswordInput'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import {
+  RegisterMutation,
+  Register as RegisterQuery
+} from '../generated/graphql'
 import { CenterLayout } from '../layouts/center'
+import { loginUser } from '../state'
+
+type RegisterFormInput = {
+  username: string
+  email: string
+  fullName: string
+  password: string
+}
 
 export default function Register() {
-  const [password, setPassword] = useState('')
-  const [email, setEmail] = useState('')
-  const [fullName, setFullName] = useState('')
-  const [username, setUsername] = useState('')
+  const router = useRouter()
+  const { register, handleSubmit } = useForm<RegisterFormInput>()
+  const [registerUser] = useMutation<RegisterMutation>(RegisterQuery)
+  const [show, setShow] = useState(false)
 
-  const handleEmailChange = e => {
-    setEmail(e.target.value)
+  const onSubmit: SubmitHandler<RegisterFormInput> = async data => {
+    const {
+      data: { register: res }
+    } = await registerUser({
+      variables: {
+        data
+      }
+    })
+    if (res.accessToken && res.refreshToken) {
+      loginUser(res.user, res.accessToken, res.refreshToken)
+      router.push('/notes')
+    } else {
+      console.error('Error registering user')
+    }
   }
-  const handleNameChange = e => {
-    setFullName(e.target.value)
-  }
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    console.log({ email, password, name: fullName })
-  }
+
   return (
     <CenterLayout>
       <Text fontSize='4xl' mb={2}>
         Join Typenotes
       </Text>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Stack>
           <Input
             placeholder='Enter Username'
-            value={username}
             type='text'
             name='username'
-            onChange={handleEmailChange}
+            {...register('username', { required: true })}
           />
           <Input
             placeholder='Enter Email'
-            value={email}
             type='email'
             name='email'
-            onChange={handleEmailChange}
+            {...register('email', { required: true })}
           />
           <Input
             placeholder='Enter Name'
-            value={fullName}
             type='text'
-            name='name'
-            onChange={handleNameChange}
+            name='fullName'
+            {...register('fullName', { required: true })}
           />
-          <PasswordInput value={password} setValue={setPassword} />
+          <InputGroup size='md'>
+            <Input
+              pr='4.5rem'
+              type={show ? 'text' : 'password'}
+              placeholder='Enter password'
+              name='password'
+              {...register('password', { required: true })}
+            />
+            <InputRightElement width='4.5rem'>
+              <Button
+                h='1.75rem'
+                size='sm'
+                color='gray.700'
+                onClick={() => setShow(!show)}
+              >
+                {show ? 'Hide' : 'Show'}
+              </Button>
+            </InputRightElement>
+          </InputGroup>
           <Button type='submit' bg='brand'>
             Register
           </Button>

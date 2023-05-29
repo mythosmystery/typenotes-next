@@ -45,8 +45,7 @@ export type MutationLoginArgs = {
 
 
 export type MutationNoteCreateArgs = {
-  body: Scalars['String'];
-  title: Scalars['String'];
+  data: NoteCreateInput;
 };
 
 
@@ -75,10 +74,19 @@ export type Note = {
   __typename?: 'Note';
   _id: Scalars['ID'];
   body: Scalars['String'];
+  category: Scalars['String'];
   createdAt: Scalars['DateTime'];
   createdBy: User;
+  isPublic: Scalars['Boolean'];
   title: Scalars['String'];
   updatedAt: Scalars['DateTime'];
+};
+
+export type NoteCreateInput = {
+  body?: InputMaybe<Scalars['String']>;
+  category?: InputMaybe<Scalars['String']>;
+  isPublic: Scalars['Boolean'];
+  title: Scalars['String'];
 };
 
 export type Query = {
@@ -126,6 +134,13 @@ export type LoginMutationVariables = Exact<{
 
 export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'Auth', accessToken: string, refreshToken: string, user: { __typename?: 'User', _id: string, email: string, fullName: string, username: string } } };
 
+export type RegisterMutationVariables = Exact<{
+  data: RegisterInput;
+}>;
+
+
+export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'Auth', accessToken: string, refreshToken: string, user: { __typename?: 'User', _id: string, email: string, fullName: string, username: string } } };
+
 export type NoteUpdateMutationVariables = Exact<{
   id: Scalars['String'];
   body?: InputMaybe<Scalars['String']>;
@@ -134,15 +149,36 @@ export type NoteUpdateMutationVariables = Exact<{
 
 export type NoteUpdateMutation = { __typename?: 'Mutation', noteUpdate: { __typename?: 'Note', _id: string, body: string, title: string, createdAt: any, updatedAt: any } };
 
+export type NoteCreateMutationVariables = Exact<{
+  data: NoteCreateInput;
+}>;
+
+
+export type NoteCreateMutation = { __typename?: 'Mutation', noteCreate: { __typename?: 'Note', _id: string, body: string, title: string, category: string, isPublic: boolean, createdAt: any, updatedAt: any } };
+
 export type GetMeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMeQuery = { __typename?: 'Query', me: { __typename?: 'User', _id: string, fullName: string, email: string, notes: Array<{ __typename?: 'Note', _id: string, title: string, body: string }> } };
+export type GetMeQuery = { __typename?: 'Query', me: { __typename?: 'User', _id: string, fullName: string, email: string, notes: Array<{ __typename?: 'Note', _id: string, title: string, body: string, category: string, isPublic: boolean }> } };
 
 
 export const Login = gql`
     mutation Login($data: LoginInput!) {
   login(data: $data) {
+    accessToken
+    refreshToken
+    user {
+      _id
+      email
+      fullName
+      username
+    }
+  }
+}
+    `;
+export const Register = gql`
+    mutation Register($data: RegisterInput!) {
+  register(data: $data) {
     accessToken
     refreshToken
     user {
@@ -165,6 +201,19 @@ export const NoteUpdate = gql`
   }
 }
     `;
+export const NoteCreate = gql`
+    mutation NoteCreate($data: NoteCreateInput!) {
+  noteCreate(data: $data) {
+    _id
+    body
+    title
+    category
+    isPublic
+    createdAt
+    updatedAt
+  }
+}
+    `;
 export const GetMe = gql`
     query GetMe {
   me {
@@ -175,6 +224,8 @@ export const GetMe = gql`
       _id
       title
       body
+      category
+      isPublic
     }
   }
 }

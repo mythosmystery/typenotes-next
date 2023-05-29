@@ -11,11 +11,36 @@ mutation Login($data: LoginInput!) {
   }
 }
 
+mutation Register($data: RegisterInput!) {
+  register(data: $data) {
+    accessToken
+    refreshToken
+    user {
+      _id
+      email
+      fullName
+      username
+    }
+  }
+}
+
 mutation NoteUpdate($id: String!, $body: String) {
   noteUpdate(id: $id, body: $body) {
     _id
     body
     title
+    createdAt
+    updatedAt
+  }
+}
+
+mutation NoteCreate($data: NoteCreateInput!) {
+  noteCreate(data: $data) {
+    _id
+    body
+    title
+    category
+    isPublic
     createdAt
     updatedAt
   }

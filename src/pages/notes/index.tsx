@@ -1,25 +1,12 @@
 import {
-  AspectRatio,
   Box,
-  Divider,
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerHeader,
   Editable,
-  EditableInput,
   EditablePreview,
   EditableTextarea,
-  Heading,
-  Icon,
-  IconButton,
   Text,
-  Textarea,
-  useDisclosure
+  useToast
 } from '@chakra-ui/react'
 import { ChangeEvent, useCallback, useEffect, useState } from 'react'
-import { ArrowForwardIcon, AddIcon } from '@chakra-ui/icons'
-import { useRouter } from 'next/router'
 import { CenterLayout } from '../../layouts/center'
 import { Titlebar } from '../../components/atoms/Titlebar'
 import { MarkdownPreview } from '../../components/molecules/MarkdownPreview'
@@ -31,21 +18,20 @@ import {
   NoteUpdate,
   NoteUpdateMutation
 } from '../../generated/graphql'
+import { NoteTree } from '../../components/molecules/NoteTree'
 import { debounce } from 'lodash'
-import { Event } from 'ws'
 
 export default function Notes() {
-  const router = useRouter()
+  const toast = useToast()
   const [selectedNote, setSelectedNote] = useState<Partial<Note>>(null)
 
   const { data, error, loading } = useQuery<GetMeQuery>(GetMe)
   const [updateNote] = useMutation<NoteUpdateMutation>(NoteUpdate)
 
-  const noteUpdate = useCallback(debounce(noteUpdateHandler, 2000), [])
+  const noteUpdate = useCallback(debounce(noteUpdateHandler, 5000), [])
 
   useEffect(() => {
     if (data?.me?.notes?.length > 0) {
-      console.log(data.me.notes)
       setSelectedNote({
         ...data.me.notes[0]
       })
@@ -72,9 +58,22 @@ export default function Notes() {
     })
     if (errors) {
       console.error(errors)
+      toast({
+        title: 'Error updating note',
+        description: errors[0].message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true
+      })
     }
     if (data) {
-      console.log(data)
+      toast({
+        title: 'Note saved',
+        status: 'success',
+        position: 'bottom-right',
+        duration: 2000,
+        isClosable: true
+      })
     }
   }
 
@@ -87,6 +86,7 @@ export default function Notes() {
         display='flex'
         w='100vw'
       >
+        <NoteTree />
         <Editable
           flex={1}
           defaultValue={'# Hello World!'}

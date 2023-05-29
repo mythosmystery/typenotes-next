@@ -6,30 +6,35 @@ import {
   Link,
   LinkBox,
   Stack,
-  Text
+  Text,
+  InputGroup,
+  InputRightElement
 } from '@chakra-ui/react'
 import { useState } from 'react'
 import NLink from 'next/link'
-import { PasswordInput } from '../components/atoms/PasswordInput'
 import { CenterLayout } from '../layouts/center'
 import { useRouter } from 'next/router'
 import { useMutation } from '@apollo/client'
 import { Login, LoginMutation } from '../generated/graphql'
 import { globalState, loginUser } from '../state'
 import { useHookstate } from '@hookstate/core'
+import { SubmitHandler, useForm } from 'react-hook-form'
+
+type LoginFormInput = {
+  email: string
+  password: string
+}
 
 export default function LoginPage() {
   const router = useRouter()
   const [login] = useMutation<LoginMutation>(Login)
-  const [password, setPassword] = useState('')
-  const [email, setEmail] = useState('')
+  const [show, setShow] = useState(false)
+  const { register, handleSubmit } = useForm<LoginFormInput>()
 
-  const handleEmailChange = e => {
-    setEmail(e.target.value)
-  }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const onSubmit: SubmitHandler<LoginFormInput> = async ({
+    email,
+    password
+  }) => {
     const {
       data: { login: res }
     } = await login({
@@ -49,15 +54,32 @@ export default function LoginPage() {
       <Text fontSize='4xl' mb={2}>
         Welcome back!
       </Text>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Stack>
           <Input
             placeholder='Enter Email'
             type='email'
-            value={email}
-            onChange={handleEmailChange}
+            {...register('email', { required: true })}
           />
-          <PasswordInput value={password} setValue={setPassword} />
+          <InputGroup size='md'>
+            <Input
+              pr='4.5rem'
+              type={show ? 'text' : 'password'}
+              placeholder='Enter password'
+              name='password'
+              {...register('password', { required: true })}
+            />
+            <InputRightElement width='4.5rem'>
+              <Button
+                h='1.75rem'
+                size='sm'
+                color='gray.700'
+                onClick={() => setShow(!show)}
+              >
+                {show ? 'Hide' : 'Show'}
+              </Button>
+            </InputRightElement>
+          </InputGroup>
           <Button type='submit' bg='brand'>
             Login
           </Button>
