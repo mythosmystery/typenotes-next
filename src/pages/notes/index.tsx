@@ -33,7 +33,7 @@ export default function Notes() {
   const noteUpdate = useCallback(debounce(noteUpdateHandler, 5000), [])
 
   useEffect(() => {
-    if (data?.me?.notes?.length > 0 && !user.selectedNote.get()._id) {
+    if (data?.me?.notes?.length > 0 && !user.selectedNote?.get()?._id) {
       user.selectedNote.set(data.me.notes[0])
     }
   }, [data?.me?.notes])
@@ -47,7 +47,6 @@ export default function Notes() {
   }
 
   async function noteUpdateHandler(e: ChangeEvent<HTMLTextAreaElement>) {
-    console.log(e.target.value)
     if (!user.selectedNote.get()._id) return
 
     const { data, errors } = await updateNote({
@@ -90,7 +89,7 @@ export default function Notes() {
         <Editable
           flex={1}
           defaultValue={'# Hello World!'}
-          value={user.selectedNote.get()?.body}
+          value={user.selectedNote?.get()?.body}
           onChange={e => {
             user.merge(p => ({ selectedNote: { ...p.selectedNote, body: e } }))
           }}

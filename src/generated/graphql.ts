@@ -33,6 +33,7 @@ export type Mutation = {
   noteCreate: Note;
   noteDelete: Scalars['Boolean'];
   noteUpdate: Note;
+  notesUpdateCategory: Scalars['Int'];
   register: Auth;
   userDelete: Scalars['Boolean'];
   userUpdate: User;
@@ -58,6 +59,12 @@ export type MutationNoteUpdateArgs = {
   body?: InputMaybe<Scalars['String']>;
   id: Scalars['String'];
   title?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationNotesUpdateCategoryArgs = {
+  newCategory: Scalars['String'];
+  oldCategory: Scalars['String'];
 };
 
 
@@ -156,6 +163,14 @@ export type NoteCreateMutationVariables = Exact<{
 
 export type NoteCreateMutation = { __typename?: 'Mutation', noteCreate: { __typename?: 'Note', _id: string, body: string, title: string, category: string, isPublic: boolean, createdAt: any, updatedAt: any } };
 
+export type NotesUpdateCategoryMutationVariables = Exact<{
+  oldCategory: Scalars['String'];
+  newCategory: Scalars['String'];
+}>;
+
+
+export type NotesUpdateCategoryMutation = { __typename?: 'Mutation', notesUpdateCategory: number };
+
 export type GetMeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -212,6 +227,11 @@ export const NoteCreate = gql`
     createdAt
     updatedAt
   }
+}
+    `;
+export const NotesUpdateCategory = gql`
+    mutation NotesUpdateCategory($oldCategory: String!, $newCategory: String!) {
+  notesUpdateCategory(oldCategory: $oldCategory, newCategory: $newCategory)
 }
     `;
 export const GetMe = gql`

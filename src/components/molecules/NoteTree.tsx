@@ -13,16 +13,27 @@ import {
   Switch,
   useToast,
   InputGroup,
-  InputLeftElement
+  InputLeftElement,
+  Editable,
+  EditablePreview,
+  EditableInput,
+  Text
 } from '@chakra-ui/react'
 import { AddIcon, SearchIcon } from '@chakra-ui/icons'
 import React, { ChangeEvent, useCallback } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
-import { Note, NoteCreate, NoteCreateMutation } from '../../generated/graphql'
+import {
+  Note,
+  NoteCreate,
+  NoteCreateMutation,
+  NotesUpdateCategory,
+  NotesUpdateCategoryMutation
+} from '../../generated/graphql'
 import { useMutation } from '@apollo/client'
 import { useHookstate } from '@hookstate/core'
 import { globalState } from '../../state'
 import { debounce } from 'lodash'
+import { EditableText } from '../atoms/EditableText'
 
 type NoteCreateInput = {
   title: string
@@ -39,18 +50,24 @@ export const NoteTree = ({ notes }: NoteTreeProps) => {
   const { user } = useHookstate(globalState)
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { register, handleSubmit } = useForm<NoteCreateInput>()
+  const [search, setSearch] = React.useState('')
+  const btnRef = React.useRef()
+  const searchUpdate = useCallback(debounce(searchUpdateHandler, 200), [])
   const [noteCreate] = useMutation<NoteCreateMutation>(NoteCreate, {
     refetchQueries: ['GetMe']
   })
-  const [search, setSearch] = React.useState('')
-  const searchUpdate = useCallback(debounce(searchUpdateHandler, 200), [])
+  const [categoryUpdate] = useMutation<NotesUpdateCategoryMutation>(
+    NotesUpdateCategory,
+    {
+      refetchQueries: ['GetMe']
+    }
+  )
+
+  const reducedNotes = notes.filter(noteFilter).reduce(noteReducer, {})
 
   function searchUpdateHandler(e: ChangeEvent<HTMLInputElement>) {
-    console.log(e.target.value)
     setSearch(e.target.value)
   }
-
-  const btnRef = React.useRef()
 
   const onSubmit: SubmitHandler<NoteCreateInput> = async data => {
     const {
@@ -85,10 +102,8 @@ export const NoteTree = ({ notes }: NoteTreeProps) => {
 
   const handleClick = (note: Partial<Note>) => {
     const selectedNote = user.get().selectedNote
-    console.log(selectedNote)
-    if (
-      selectedNote.body !== notes.find(n => n._id === selectedNote._id)?.body
-    ) {
+    const originalNote = notes.find(n => n._id === selectedNote._id)
+    if (selectedNote.body !== originalNote?.body) {
       toast({
         title: 'Note not saved.',
         status: 'warning',
@@ -99,11 +114,56 @@ export const NoteTree = ({ notes }: NoteTreeProps) => {
     user.selectedNote.set(note)
   }
 
+  function noteReducer(
+    acc: { [key: string]: Array<Partial<Note>> },
+    note: Partial<Note>
+  ) {
+    const key = note.category
+
+    if (!acc[key]) {
+      acc[key] = []
+    }
+
+    acc[key].push(note)
+
+    return acc
+  }
+
   function noteFilter(note: Partial<Note>): boolean {
     return (
       note.title?.toLowerCase().includes(search.toLowerCase()) ||
       note.body?.toLowerCase().includes(search.toLowerCase())
     )
+  }
+
+  async function handleCategoryUpdate(category: string, oldCategory: string) {
+    const {
+      data: { notesUpdateCategory: res },
+      errors
+    } = await categoryUpdate({
+      variables: {
+        newCategory: category,
+        oldCategory
+      }
+    })
+    if (res) {
+      toast({
+        title: `Updated category ${oldCategory} -> ${category} for ${res} notes`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true
+      })
+    }
+    if (errors) {
+      console.error(errors)
+      toast({
+        title: 'An error occurred.',
+        description: 'Unable to update category. ${errors[0].message}',
+        status: 'error',
+        duration: 5000,
+        isClosable: true
+      })
+    }
   }
 
   return (
@@ -124,16 +184,21 @@ export const NoteTree = ({ notes }: NoteTreeProps) => {
             variant='flushed'
           />
         </InputGroup>
-        {notes.filter(noteFilter).map(note => (
-          <Button
-            onClick={() => handleClick(note)}
-            my={2}
-            size='lg'
-            key={note._id}
-            variant='link'
-          >
-            {note.title}
-          </Button>
+        {Object.keys(reducedNotes).map(category => (
+          <>
+            <EditableText category={category} callback={handleCategoryUpdate} />
+            {reducedNotes[category].map(note => (
+              <Button
+                onClick={() => handleClick(note)}
+                my={2}
+                size='lg'
+                key={note._id}
+                variant='link'
+              >
+                {note.title}
+              </Button>
+            ))}
+          </>
         ))}
       </Flex>
 

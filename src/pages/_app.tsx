@@ -7,12 +7,13 @@ import { Breadcrumbs } from '../components/atoms/Breadcrumbs'
 import 'highlightjs/styles/atom-one-dark.css'
 import { ApolloProvider } from '@apollo/client'
 import { apolloClient } from '../boot/apollo'
+import { UserMenu } from '../components/molecules/UserMenu'
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ApolloProvider client={apolloClient}>
       <ChakraProvider resetCSS theme={theme}>
-        <DarkModeSwitch />
+        <UserMenu />
         <Breadcrumbs />
         <Component {...pageProps} />
       </ChakraProvider>

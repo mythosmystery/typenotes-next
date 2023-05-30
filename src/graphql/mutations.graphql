@@ -45,3 +45,7 @@ mutation NoteCreate($data: NoteCreateInput!) {
     updatedAt
   }
 }
+
+mutation NotesUpdateCategory($oldCategory: String!, $newCategory: String!) {
+  notesUpdateCategory(oldCategory: $oldCategory, newCategory: $newCategory)
+}

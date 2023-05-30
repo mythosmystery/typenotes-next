@@ -1,21 +1,33 @@
-import { Box, EditablePreview, Text, useColorMode, useEditableState } from "@chakra-ui/react"
-import { marked } from "marked"
-import hljs from "highlightjs"
+import {
+  Box,
+  EditablePreview,
+  Text,
+  useColorMode,
+  useEditableState
+} from '@chakra-ui/react'
+import { marked } from 'marked'
+import hljs from 'highlightjs'
+
 export const MarkdownPreview = props => {
   const { isEditing, onEdit } = useEditableState()
   const { colorMode } = useColorMode()
   marked.setOptions({
     renderer: new marked.Renderer(),
     highlight: function (code, lang) {
-      return hljs.highlightAuto(code).value
+      try {
+        return hljs.highlight(lang, code).value
+      } catch (_) {
+        return hljs.highlightAuto(code).value
+      }
+      // return hljs.highlightAuto(code).value
     },
-    langPrefix: "hljs language-", // highlight.js css expects a top-level 'hljs' class.
+    langPrefix: 'hljs language-', // highlight.js css expects a top-level 'hljs' class.
     pedantic: false,
     gfm: true,
     smartLists: true
   })
-  const parsedMarkdown = marked.parse(props.inputText || props.children || "")
-  // const sanitizedHtml = sanitize(props.children)
+  const parsedMarkdown = marked.parse(props.inputText || props.children || '')
+  // const parsedMarkdown = sanitize(parsedMarkdownPre)
   const styles = `
   <style>
     .markdown-container h1 {
@@ -89,7 +101,7 @@ export const MarkdownPreview = props => {
       padding: 0.5rem ;
     }
     .markdown-container tr:nth-child(even) {
-      background-color: ${colorMode === "dark" ? "#232142" : "#dfdfff"};} ;
+      background-color: ${colorMode === 'dark' ? '#232142' : '#dfdfff'};} ;
     }
     .markdown-container hr {
       border: 2px solid #333444 ;
@@ -97,8 +109,19 @@ export const MarkdownPreview = props => {
   </style>
   `
   return (
-    <Box h="87vh" m="4px" px={24} maxW="80vw" overflowY="scroll" hidden={isEditing} onClick={onEdit}>
-      <div className="markdown-container" dangerouslySetInnerHTML={{ __html: parsedMarkdown + styles }} />
+    <Box
+      h='87vh'
+      m='4px'
+      px={24}
+      maxW='80vw'
+      overflowY='scroll'
+      hidden={isEditing}
+      onClick={onEdit}
+    >
+      <div
+        className='markdown-container'
+        dangerouslySetInnerHTML={{ __html: parsedMarkdown + styles }}
+      />
     </Box>
   )
 }
