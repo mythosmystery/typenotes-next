@@ -11,13 +11,16 @@ import {
   useDisclosure,
   Flex,
   Switch,
-  useToast
+  useToast,
+  Heading
 } from '@chakra-ui/react'
 import { AddIcon } from '@chakra-ui/icons'
 import React from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
-import { NoteCreate, NoteCreateMutation } from '../../generated/graphql'
+import { Note, NoteCreate, NoteCreateMutation } from '../../generated/graphql'
 import { useMutation } from '@apollo/client'
+import { useHookstate } from '@hookstate/core'
+import { globalState } from '../../state'
 
 type NoteCreateInput = {
   title: string
@@ -25,11 +28,18 @@ type NoteCreateInput = {
   isPublic: boolean
 }
 
-export const NoteTree = () => {
+interface NoteTreeProps {
+  notes: Array<Partial<Note>>
+}
+
+export const NoteTree = ({ notes }: NoteTreeProps) => {
   const toast = useToast()
+  const { user } = useHookstate(globalState)
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { register, handleSubmit } = useForm<NoteCreateInput>()
-  const [noteCreate] = useMutation<NoteCreateMutation>(NoteCreate)
+  const [noteCreate] = useMutation<NoteCreateMutation>(NoteCreate, {
+    refetchQueries: ['GetMe']
+  })
   const btnRef = React.useRef()
 
   const onSubmit: SubmitHandler<NoteCreateInput> = async data => {
@@ -63,13 +73,43 @@ export const NoteTree = () => {
     }
   }
 
+  const handleClick = (note: Partial<Note>) => {
+    const selectedNote = user.get().selectedNote
+    console.log(selectedNote)
+    if (
+      selectedNote.body !== notes.find(n => n._id === selectedNote._id)?.body
+    ) {
+      toast({
+        title: 'Note not saved.',
+        status: 'warning',
+        duration: 5000
+      })
+      return
+    }
+    user.selectedNote.set(note)
+  }
+
   return (
     <>
-      <Flex align='center' justify='center' w={40} mt={4}>
-        <Button variant='outline' ref={btnRef} onClick={onOpen}>
-          <AddIcon />
-        </Button>
+      <Flex direction='column' w={40} mt={4}>
+        <Flex align='center' justify='center' w={40} my={4}>
+          <Button variant='outline' ref={btnRef} onClick={onOpen}>
+            <AddIcon />
+          </Button>
+        </Flex>
+        {notes.map(note => (
+          <Button
+            onClick={() => handleClick(note)}
+            my={2}
+            size='lg'
+            key={note._id}
+            variant='link'
+          >
+            {note.title}
+          </Button>
+        ))}
       </Flex>
+
       <Drawer
         isOpen={isOpen}
         placement='left'

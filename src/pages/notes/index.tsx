@@ -20,10 +20,12 @@ import {
 } from '../../generated/graphql'
 import { NoteTree } from '../../components/molecules/NoteTree'
 import { debounce } from 'lodash'
+import { useHookstate } from '@hookstate/core'
+import { globalState } from '../../state'
 
 export default function Notes() {
   const toast = useToast()
-  const [selectedNote, setSelectedNote] = useState<Partial<Note>>(null)
+  const { user } = useHookstate(globalState)
 
   const { data, error, loading } = useQuery<GetMeQuery>(GetMe)
   const [updateNote] = useMutation<NoteUpdateMutation>(NoteUpdate)
@@ -31,10 +33,8 @@ export default function Notes() {
   const noteUpdate = useCallback(debounce(noteUpdateHandler, 5000), [])
 
   useEffect(() => {
-    if (data?.me?.notes?.length > 0) {
-      setSelectedNote({
-        ...data.me.notes[0]
-      })
+    if (data?.me?.notes?.length > 0 && !user.selectedNote.get()._id) {
+      user.selectedNote.set(data.me.notes[0])
     }
   }, [data?.me?.notes])
 
@@ -48,11 +48,11 @@ export default function Notes() {
 
   async function noteUpdateHandler(e: ChangeEvent<HTMLTextAreaElement>) {
     console.log(e.target.value)
-    if (!selectedNote?._id) return
+    if (!user.selectedNote.get()._id) return
 
     const { data, errors } = await updateNote({
       variables: {
-        id: selectedNote._id,
+        id: user.selectedNote.get()._id,
         body: e.target.value
       }
     })
@@ -86,12 +86,14 @@ export default function Notes() {
         display='flex'
         w='100vw'
       >
-        <NoteTree />
+        <NoteTree notes={data.me.notes || []} />
         <Editable
           flex={1}
           defaultValue={'# Hello World!'}
-          value={selectedNote?.body}
-          onChange={e => setSelectedNote(note => ({ ...note, body: e }))}
+          value={user.selectedNote.get()?.body}
+          onChange={e => {
+            user.merge(p => ({ selectedNote: { ...p.selectedNote, body: e } }))
+          }}
         >
           <EditablePreview as={MarkdownPreview} />
           <EditableTextarea
