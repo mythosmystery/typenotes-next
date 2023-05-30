@@ -12,15 +12,17 @@ import {
   Flex,
   Switch,
   useToast,
-  Heading
+  InputGroup,
+  InputLeftElement
 } from '@chakra-ui/react'
-import { AddIcon } from '@chakra-ui/icons'
-import React from 'react'
+import { AddIcon, SearchIcon } from '@chakra-ui/icons'
+import React, { ChangeEvent, useCallback } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { Note, NoteCreate, NoteCreateMutation } from '../../generated/graphql'
 import { useMutation } from '@apollo/client'
 import { useHookstate } from '@hookstate/core'
 import { globalState } from '../../state'
+import { debounce } from 'lodash'
 
 type NoteCreateInput = {
   title: string
@@ -40,6 +42,14 @@ export const NoteTree = ({ notes }: NoteTreeProps) => {
   const [noteCreate] = useMutation<NoteCreateMutation>(NoteCreate, {
     refetchQueries: ['GetMe']
   })
+  const [search, setSearch] = React.useState('')
+  const searchUpdate = useCallback(debounce(searchUpdateHandler, 200), [])
+
+  function searchUpdateHandler(e: ChangeEvent<HTMLInputElement>) {
+    console.log(e.target.value)
+    setSearch(e.target.value)
+  }
+
   const btnRef = React.useRef()
 
   const onSubmit: SubmitHandler<NoteCreateInput> = async data => {
@@ -89,6 +99,13 @@ export const NoteTree = ({ notes }: NoteTreeProps) => {
     user.selectedNote.set(note)
   }
 
+  function noteFilter(note: Partial<Note>): boolean {
+    return (
+      note.title?.toLowerCase().includes(search.toLowerCase()) ||
+      note.body?.toLowerCase().includes(search.toLowerCase())
+    )
+  }
+
   return (
     <>
       <Flex direction='column' w={40} mt={4}>
@@ -97,7 +114,17 @@ export const NoteTree = ({ notes }: NoteTreeProps) => {
             <AddIcon />
           </Button>
         </Flex>
-        {notes.map(note => (
+        <InputGroup>
+          <InputLeftElement children={<SearchIcon />} />
+          <Input
+            onChange={searchUpdate}
+            mx={3}
+            mb={2}
+            placeholder='search'
+            variant='flushed'
+          />
+        </InputGroup>
+        {notes.filter(noteFilter).map(note => (
           <Button
             onClick={() => handleClick(note)}
             my={2}
