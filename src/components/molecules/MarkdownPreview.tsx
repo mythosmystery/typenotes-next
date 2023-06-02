@@ -19,7 +19,6 @@ export const MarkdownPreview = props => {
       } catch (_) {
         return hljs.highlightAuto(code).value
       }
-      // return hljs.highlightAuto(code).value
     },
     langPrefix: 'hljs language-', // highlight.js css expects a top-level 'hljs' class.
     pedantic: false,

@@ -14,7 +14,6 @@ const forwardLink = new ApolloLink((operation, forward) => {
     const context = operation.getContext()
     const token = context.response.headers.get('X-Access-Token')
     if (token) {
-      console.log('got token', token)
       globalState.token.set(token)
       globalState.authenticated.set(true)
       if (!response.data?.me)
