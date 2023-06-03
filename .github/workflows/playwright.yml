@@ -17,11 +17,13 @@ jobs:
         run: yarn
       - name: Install Playwright Browsers
         run: yarn playwright install --with-deps
-      - name: Run App
-        run: yarn start
-          background: true
-      - name: Run Playwright tests
-        run: yarn playwright test
+      - name: Run and test
+        run: |
+          yarn start &
+          yarn playwright test
+        env:
+          CI: true
+          API_URL: https://typenotes.mythosmystery.dev
       - uses: actions/upload-artifact@v3
         if: always()
         with:

@@ -3,12 +3,9 @@ module.exports = () => {
     return [
       {
         source: '/gql',
-        destination:
-          process.env.NODE_ENV === 'production'
-            ? process.env.CI
-              ? 'https://typenotes.mythosmystery.dev/gql'
-              : 'http://typenotes-server:4000/gql'
-            : 'http://localhost:4000/gql'
+        destination: process.env.API_URL
+          ? `${process.env.API_URL}/gql`
+          : 'http://localhost:4000/gql'
       }
     ]
   }
