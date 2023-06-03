@@ -31,3 +31,7 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+      - uses: gitboard-io/gitboard-action@main
+        with:
+          username: mythosmystery
+          key: ${{ secrets.GITBOARD_KEY}}
