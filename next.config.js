@@ -3,8 +3,10 @@ module.exports = () => {
     return [
       {
         source: '/gql',
-        destination: 'http://localhost:4000/gql'
-        // destination: 'http://typenotes-server:4000/gql'
+        destination:
+          process.env.NODE_ENV === 'production'
+            ? 'http://typenotes-server:4000/gql'
+            : 'http://localhost:4000/gql'
       }
     ]
   }
