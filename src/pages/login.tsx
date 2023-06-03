@@ -8,7 +8,8 @@ import {
   Stack,
   Text,
   InputGroup,
-  InputRightElement
+  InputRightElement,
+  useToast
 } from '@chakra-ui/react'
 import { useState } from 'react'
 import NLink from 'next/link'
@@ -26,6 +27,7 @@ type LoginFormInput = {
 }
 
 export default function LoginPage() {
+  const toast = useToast()
   const router = useRouter()
   const [login] = useMutation<LoginMutation>(Login)
   const [show, setShow] = useState(false)
@@ -35,18 +37,36 @@ export default function LoginPage() {
     email,
     password
   }) => {
-    const {
-      data: { login: res }
-    } = await login({
-      variables: {
-        data: { email, password }
+    try {
+      const { data } = await login({
+        variables: {
+          data: { email, password }
+        }
+      })
+      const res = data?.login
+      if (res?.accessToken && res?.refreshToken) {
+        loginUser(res.user, res.accessToken, res.refreshToken)
+        toast({
+          title: 'Logged in successfully',
+          status: 'success',
+          duration: 2000
+        })
+        router.push('/notes')
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Invalid email or password',
+          status: 'error',
+          duration: 5000
+        })
       }
-    })
-    if (res.accessToken && res.refreshToken) {
-      loginUser(res.user, res.accessToken, res.refreshToken)
-      router.push('/notes')
-    } else {
-      console.error('Error logging in')
+    } catch (e) {
+      toast({
+        title: 'Error',
+        description: 'Invalid email or password',
+        status: 'error',
+        duration: 5000
+      })
     }
   }
   return (

@@ -13,10 +13,13 @@ import {
 import { SettingsIcon, SunIcon, MoonIcon } from '@chakra-ui/icons'
 import { logoutUser } from '../../state'
 import { useRouter } from 'next/router'
+import { useHookstate } from '@hookstate/core'
+import { globalState } from '../../state'
 
 export const UserMenu = () => {
   const toast = useToast()
   const router = useRouter()
+  const state = useHookstate(globalState)
   const { colorMode, toggleColorMode } = useColorMode()
   const isDark = colorMode === 'dark'
 
@@ -54,9 +57,15 @@ export const UserMenu = () => {
               toggle dark mode
             </Text>
           </MenuItem>
-          <MenuItem onClick={handleProfile}>profile</MenuItem>
-          <MenuItem onClick={handleSettings}>settings</MenuItem>
-          <MenuItem onClick={handleLogout}>log out</MenuItem>
+          {state.authenticated.get() ? (
+            <>
+              <MenuItem onClick={handleProfile}>profile</MenuItem>
+              <MenuItem onClick={handleSettings}>settings</MenuItem>
+              <MenuItem onClick={handleLogout}>log out</MenuItem>
+            </>
+          ) : (
+            <MenuItem onClick={() => router.push('/login')}>log in</MenuItem>
+          )}
         </MenuList>
       </Menu>
     </Box>

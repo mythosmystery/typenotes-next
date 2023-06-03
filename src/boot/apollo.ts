@@ -3,10 +3,13 @@ import {
   ApolloLink,
   createHttpLink,
   HttpLink,
-  InMemoryCache
+  InMemoryCache,
+  ServerError
 } from '@apollo/client'
+import { onError } from '@apollo/client/link/error'
 import { setContext } from '@apollo/client/link/context'
-import { globalState } from '../state'
+import { globalState, logoutUser } from '../state'
+import Router from 'next/router'
 
 const forwardLink = new ApolloLink((operation, forward) => {
   operation.setContext({})
@@ -21,6 +24,23 @@ const forwardLink = new ApolloLink((operation, forward) => {
     }
     return response
   })
+})
+
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) {
+    console.log('graphQLErrors', graphQLErrors)
+  }
+  if (networkError) {
+    const { statusCode, response, message } = networkError as ServerError
+    console.log('networkError', networkError)
+    if (statusCode === 401) {
+      logoutUser()
+      Router.push('/login')
+    }
+    if (statusCode === 500) {
+      Router.push('/server-error')
+    }
+  }
 })
 
 const httpLink = createHttpLink({
@@ -42,6 +62,6 @@ const authLink = setContext((_, { headers }) => {
 const link = ApolloLink.from([authLink, forwardLink, httpLink])
 
 export const apolloClient = new ApolloClient({
-  link,
+  link: ApolloLink.from([errorLink, link]),
   cache: new InMemoryCache()
 })

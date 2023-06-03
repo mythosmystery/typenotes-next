@@ -7,7 +7,8 @@ import {
   Stack,
   Text,
   InputGroup,
-  InputRightElement
+  InputRightElement,
+  useToast
 } from '@chakra-ui/react'
 import NLink from 'next/link'
 import { useRouter } from 'next/router'
@@ -28,24 +29,44 @@ type RegisterFormInput = {
 }
 
 export default function Register() {
+  const toast = useToast()
   const router = useRouter()
   const { register, handleSubmit } = useForm<RegisterFormInput>()
   const [registerUser] = useMutation<RegisterMutation>(RegisterQuery)
   const [show, setShow] = useState(false)
 
   const onSubmit: SubmitHandler<RegisterFormInput> = async data => {
-    const {
-      data: { register: res }
-    } = await registerUser({
-      variables: {
-        data
+    try {
+      const {
+        data: { register: res }
+      } = await registerUser({
+        variables: {
+          data
+        }
+      })
+      if (res.accessToken && res.refreshToken) {
+        loginUser(res.user, res.accessToken, res.refreshToken)
+        toast({
+          title: 'Account created successfully',
+          status: 'success',
+          duration: 2000
+        })
+        router.push('/notes')
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Error creating account',
+          status: 'error',
+          duration: 5000
+        })
       }
-    })
-    if (res.accessToken && res.refreshToken) {
-      loginUser(res.user, res.accessToken, res.refreshToken)
-      router.push('/notes')
-    } else {
-      console.error('Error registering user')
+    } catch (e) {
+      toast({
+        title: 'Error',
+        description: 'Error creating account',
+        status: 'error',
+        duration: 5000
+      })
     }
   }
 
