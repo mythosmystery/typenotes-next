@@ -19,7 +19,7 @@ jobs:
         run: yarn playwright install --with-deps
       - name: Run App
         run: yarn start
-        background: true
+          background: true
       - name: Run Playwright tests
         run: yarn playwright test
       - uses: actions/upload-artifact@v3
