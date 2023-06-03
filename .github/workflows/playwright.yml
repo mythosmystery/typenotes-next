@@ -19,6 +19,7 @@ jobs:
         run: yarn playwright install --with-deps
       - name: Run and test
         run: |
+          yarn build
           yarn start &
           yarn playwright test
         env:
