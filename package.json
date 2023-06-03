@@ -4,7 +4,9 @@
     "dev": "next",
     "build": "next build",
     "start": "next start",
-    "gen": "graphql-codegen --config codegen.yml"
+    "gen": "graphql-codegen --config codegen.yml",
+    "test": "playwright test",
+    "test:report": "yarn test && playwright show-report"
   },
   "dependencies": {
     "@apollo/client": "^3.6.4",
@@ -35,6 +37,7 @@
     "@graphql-codegen/typescript": "2.4.11",
     "@graphql-codegen/typescript-document-nodes": "2.2.11",
     "@graphql-codegen/typescript-operations": "2.4.0",
+    "@playwright/test": "^1.34.3",
     "@types/marked": "^4.0.3",
     "@types/node": "^14.6.0",
     "@types/react": "^17.0.3",
