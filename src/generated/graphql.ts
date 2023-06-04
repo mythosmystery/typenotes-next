@@ -32,6 +32,7 @@ export type Mutation = {
   login: Auth;
   noteCreate: Note;
   noteDelete: Scalars['Boolean'];
+  noteShare: Note;
   noteUpdate: Note;
   notesUpdateCategory: Scalars['Int'];
   register: Auth;
@@ -52,6 +53,12 @@ export type MutationNoteCreateArgs = {
 
 export type MutationNoteDeleteArgs = {
   id: Scalars['String'];
+};
+
+
+export type MutationNoteShareArgs = {
+  id: Scalars['String'];
+  userId: Scalars['String'];
 };
 
 
@@ -85,6 +92,9 @@ export type Note = {
   createdAt: Scalars['DateTime'];
   createdBy: User;
   isPublic: Scalars['Boolean'];
+  likedBy: Array<Scalars['ID']>;
+  likes: Scalars['Float'];
+  sharedWith: Array<User>;
   title: Scalars['String'];
   updatedAt: Scalars['DateTime'];
 };
@@ -102,10 +112,16 @@ export type Query = {
   noteById: Note;
   noteByUser: Array<Note>;
   noteMany: Array<Note>;
+  publicNoteById: Note;
 };
 
 
 export type QueryNoteByIdArgs = {
+  id: Scalars['String'];
+};
+
+
+export type QueryPublicNoteByIdArgs = {
   id: Scalars['String'];
 };
 
@@ -175,6 +191,13 @@ export type GetMeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetMeQuery = { __typename?: 'Query', me: { __typename?: 'User', _id: string, fullName: string, email: string, notes: Array<{ __typename?: 'Note', _id: string, title: string, body: string, category: string, isPublic: boolean }> } };
+
+export type GetNoteByIdQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type GetNoteByIdQuery = { __typename?: 'Query', noteById: { __typename?: 'Note', _id: string, title: string, body: string, category: string, isPublic: boolean } };
 
 
 export const Login = gql`
@@ -247,6 +270,17 @@ export const GetMe = gql`
       category
       isPublic
     }
+  }
+}
+    `;
+export const GetNoteById = gql`
+    query GetNoteById($id: String!) {
+  noteById: publicNoteById(id: $id) {
+    _id
+    title
+    body
+    category
+    isPublic
   }
 }
     `;

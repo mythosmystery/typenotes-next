@@ -44,7 +44,9 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 })
 
 const httpLink = createHttpLink({
-  uri: '/gql'
+  uri: process.env.API_URL
+    ? `${process.env.API_URL}/gql`
+    : 'http://localhost:4000/gql'
 })
 
 const authLink = setContext((_, { headers }) => {

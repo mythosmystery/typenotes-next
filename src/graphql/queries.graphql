@@ -12,3 +12,12 @@ query GetMe {
     }
   }
 }
+query GetNoteById($id: String!) {
+  noteById: publicNoteById(id: $id) {
+    _id
+    title
+    body
+    category
+    isPublic
+  }
+}

@@ -112,9 +112,9 @@ export const MarkdownPreview = props => {
       h='87vh'
       m='4px'
       px={24}
-      maxW='80vw'
+      maxW='90vw'
       overflowY='scroll'
-      hidden={isEditing}
+      hidden={isEditing && !props.isFixed}
       onClick={onEdit}
     >
       <div
