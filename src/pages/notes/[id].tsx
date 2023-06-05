@@ -39,7 +39,8 @@ export default function NoteById({
     return (
       <CenterLayout>
         <Box>
-          <Text>{error || 'An error occurred'}</Text>
+          <Heading>something went wrong</Heading>
+          <Text>{error || 'an error occurred'}</Text>
         </Box>
       </CenterLayout>
     )
